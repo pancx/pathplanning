@@ -35,73 +35,73 @@ class PpmLib {
     fs.readSync(fd, headBuffer, 0, 100, 0);
 
     if(headBuffer.readUInt8(0) != 80 || headBuffer.readUInt8(1) != 54 || headBuffer.readUInt8(2) != 10)  {
-		  console.log('Not P6 ppm format');
-		  return;
+      console.log('Not P6 ppm format');
+      return;
     }
 
-		let wString = '';
-		for(p = 3; headBuffer.readUInt8(p) != 32; p++) {
-		  wString +=(headBuffer.readUInt8(p) - 48).toString();
-		}
-		this.WIDTH = Number(wString);
+    let wString = '';
+    for(p = 3; headBuffer.readUInt8(p) != 32; p++) {
+      wString +=(headBuffer.readUInt8(p) - 48).toString();
+    }
+    this.WIDTH = Number(wString);
 
-		let hString = '';
-		for(p++ ; headBuffer.readUInt8(p) != 10; p++) {
-		  hString +=(headBuffer.readUInt8(p) - 48).toString();
-		}
-		this.HEIGHT = Number(hString);
+    let hString = '';
+    for(p++ ; headBuffer.readUInt8(p) != 10; p++) {
+      hString +=(headBuffer.readUInt8(p) - 48).toString();
+    }
+    this.HEIGHT = Number(hString);
 
-		let maxValueString = '';
-		for(p++ ; p < 40; p++) {
-		  if(headBuffer.readUInt8(p) == 10) break; 
-		  maxValueString +=(headBuffer.readUInt8(p) - 48).toString();
-		}	
-		this.maxValue = Number(maxValueString);
+    let maxValueString = '';
+    for(p++ ; p < 40; p++) {
+      if(headBuffer.readUInt8(p) == 10) break; 
+      maxValueString +=(headBuffer.readUInt8(p) - 48).toString();
+    } 
+    this.maxValue = Number(maxValueString);
 
-		if(this.maxValue != 255) {
-		  console.log('error ppm format');	
-		  return;
-		}
+    if(this.maxValue != 255) {
+      console.log('error ppm format');  
+      return;
+    }
 
     var buffer = new Buffer(headBuffer.length + this.WIDTH*this.HEIGHT*3);
     fs.readSync(fd, buffer, 0, headBuffer.length + this.WIDTH*this.HEIGHT*3, 0);
-		//let ppmLength = p + this.WIDTH * this.HEIGHT * 3;
-		p++;
-		for(let i = 0; i < this.HEIGHT; i++) {
-		  this.data.push([]);
-		  for(let j = 0; j < this.WIDTH; j++) {
-			  this.data[i].push([buffer.readUInt8(p+(i*this.WIDTH+j)*3), buffer.readUInt8(p+(i*this.WIDTH+j)*3+1) ,buffer.readUInt8(p+(i*this.WIDTH+j)*3+2)]);
-		  }
-		}
-		fs.closeSync(fd);
+    //let ppmLength = p + this.WIDTH * this.HEIGHT * 3;
+    p++;
+    for(let i = 0; i < this.HEIGHT; i++) {
+      this.data.push([]);
+      for(let j = 0; j < this.WIDTH; j++) {
+        this.data[i].push([buffer.readUInt8(p+(i*this.WIDTH+j)*3), buffer.readUInt8(p+(i*this.WIDTH+j)*3+1) ,buffer.readUInt8(p+(i*this.WIDTH+j)*3+2)]);
+      }
+    }
+    fs.closeSync(fd);
   }
 
   /**
    * Transfer RGB value in this.data to binary value. 0 represents it is an obstacle or unknowed. 1 represents it has no obstacle.
    */
   toPbm() {
-  	if(this.data.length < 1) {
-  	  console.log('Please load a ppm map first');
-  	  return;
-  	}
+    if(this.data.length < 1) {
+      console.log('Please load a ppm map first');
+      return;
+    }
 
-		for(let i = 0; i < this.HEIGHT; i++) {
-		  this.pbm.push([]);
-		  for(let j = 0; j < this.WIDTH; j++) {
-		  	if(this.data[i][j][0] == 200) {
-		  	  this.pbm[i].push(0);
-		  	}
-		  	else if(this.data[i][j][0] == 64) {
-		  	  this.pbm[i].push(1);
-		  	}
-		  	else if(this.data[i][j][1] > OBSTACLETHRESHOLD) {
-		  	  this.pbm[i].push(1);
-		  	}
-		  	else {
-		  	  this.pbm[i].push(0);
-		  	}
-		  }
-		}
+    for(let i = 0; i < this.HEIGHT; i++) {
+      this.pbm.push([]);
+      for(let j = 0; j < this.WIDTH; j++) {
+        if(this.data[i][j][0] == 200) {
+          this.pbm[i].push(0);
+        }
+        else if(this.data[i][j][0] == 64) {
+          this.pbm[i].push(1);
+        }
+        else if(this.data[i][j][1] > OBSTACLETHRESHOLD) {
+          this.pbm[i].push(1);
+        }
+        else {
+          this.pbm[i].push(0);
+        }
+      }
+    }
   }
 
   /**
@@ -111,10 +111,10 @@ class PpmLib {
    * @param  {String} filename - the full path and name of a pgm file you want to save.
    */
   saveAsPgmMap(filename) {
-  	if(this.data.length < 1) {
-  	  console.log('Please load a ppm map first');
-  	  return;
-  	}  	
+    if(this.data.length < 1) {
+      console.log('Please load a ppm map first');
+      return;
+    }   
     var fd = fs.openSync(filename, 'w');
 
     let pgmHead = 'P5\n' + this.WIDTH.toString() + ' ' + this.HEIGHT.toString() + '\n255\n';
@@ -123,25 +123,25 @@ class PpmLib {
 
     var pgmMap = [];
     for(let i = 0; i < this.HEIGHT; i++) {
-		  for(let j = 0; j < this.WIDTH; j++) {
-		  	if(this.data[i][j][0] == 200) {
-		  	  pgmMap.push(200);
-		  	}
-		  	else if(this.data[i][j][0] == 64) {
-		  	  pgmMap.push(254);
-		  	}
-		  	else if(this.data[i][j][1] > OBSTACLETHRESHOLD) {
-		  	  pgmMap.push(254);
-		  	}
-		  	else {
-		  	  pgmMap.push(0);
-		  	}
-		  }
-		}
+      for(let j = 0; j < this.WIDTH; j++) {
+        if(this.data[i][j][0] == 200) {
+          pgmMap.push(200);
+        }
+        else if(this.data[i][j][0] == 64) {
+          pgmMap.push(254);
+        }
+        else if(this.data[i][j][1] > OBSTACLETHRESHOLD) {
+          pgmMap.push(254);
+        }
+        else {
+          pgmMap.push(0);
+        }
+      }
+    }
 
     let dataBuffer = new Buffer(pgmMap);
     fs.writeSync(fd, dataBuffer, 0, dataBuffer.length, headBuffer.length);
-		fs.closeSync(fd);
+    fs.closeSync(fd);
   }
 
   /**
@@ -152,70 +152,70 @@ class PpmLib {
    * @return {Array} return the the visited pixels and path.
    */
   AStar(start, goal, pathFilename) {
-  	function distance(p, q) {
-  		return Math.sqrt((p[0]-q[0])*(p[0]-q[0]) + (p[1]-q[1])*(p[1]-q[1]));
-  	}
-  	if(this.pbm.length < 1) this.toPbm();
+    function distance(p, q) {
+      return Math.sqrt((p[0]-q[0])*(p[0]-q[0]) + (p[1]-q[1])*(p[1]-q[1]));
+    }
+    if(this.pbm.length < 1) this.toPbm();
 
-  	this.pbm = this.erode(this.pbm, ERO); // erode
-  	this.pbm = this.dilate(this.pbm, RADIUS) // dilate
+    this.pbm = this.erode(this.pbm, ERO); // erode
+    this.pbm = this.dilate(this.pbm, RADIUS) // dilate
 
-		var s2 = Math.sqrt(2);
-		var movement = [[1,0, 1.], [0,1, 1.], [-1,0, 1.], [0,-1, 1.],
-              	    [1,1, s2], [-1,1, s2], [-1,-1, s2], [1,-1, s2], 
-              	   ];
+    var s2 = Math.sqrt(2);
+    var movement = [[1,0, 1.], [0,1, 1.], [-1,0, 1.], [0,-1, 1.],
+                    [1,1, s2], [-1,1, s2], [-1,-1, s2], [1,-1, s2], 
+                   ];
 
-		var front = new Heapq();
-  	front.heappush([distance(start, goal) + 0.001, 0.001, start, null]);
-  	var extents = [this.WIDTH, this.HEIGHT];
-  	var visited = new TdArray(extents);
+    var front = new Heapq();
+    front.heappush([distance(start, goal) + 0.001, 0.001, start, null]);
+    var extents = [this.WIDTH, this.HEIGHT];
+    var visited = new TdArray(extents);
 
-  	var cameFrom = {};
+    var cameFrom = {};
 
-  	while(front.length() != 0) {
+    while(front.length() != 0) {
 
-  		let cur = front.heappop();
-  		let totalCost = cur[0];
-  		let cost = cur[1];
-  		var pos = cur[2];
-  		let pre = cur[3];
+      let cur = front.heappop();
+      let totalCost = cur[0];
+      let cost = cur[1];
+      var pos = cur[2];
+      let pre = cur[3];
 
-  		if(visited.get(pos) > 0) continue;
+      if(visited.get(pos) > 0) continue;
 
-  		visited.put(1, pos);
-  		cameFrom[pos] = pre;
+      visited.put(1, pos);
+      cameFrom[pos] = pre;
 
-  		if(pos[0] == goal[0] && pos[1] == goal[1]) break;
+      if(pos[0] == goal[0] && pos[1] == goal[1]) break;
 
-  		for(let i in movement) {
-  			let newX = pos[0] + movement[i][0];
-  			let newY = pos[1] + movement[i][1];
-  			if(newX < 0 || newX >= extents[0] || newY < 0 || newY >= extents[1]) continue;
-  			let newPos = [newX, newY];
-  			if(visited.get(newPos) == 0 && this.pbm[newPos[1]][newPos[0]] != 0) {
-  				let g = cost + movement[i][2];
-  				front.heappush([distance(goal, newPos) + g, g, newPos, pos]);  				
-  			}
-  		}
-  	}
+      for(let i in movement) {
+        let newX = pos[0] + movement[i][0];
+        let newY = pos[1] + movement[i][1];
+        if(newX < 0 || newX >= extents[0] || newY < 0 || newY >= extents[1]) continue;
+        let newPos = [newX, newY];
+        if(visited.get(newPos) == 0 && this.pbm[newPos[1]][newPos[0]] != 0) {
+          let g = cost + movement[i][2];
+          front.heappush([distance(goal, newPos) + g, g, newPos, pos]);         
+        }
+      }
+    }
 
-  	var path = [];
-  	if(pos[0] == goal[0] && pos[1] == goal[1]) {
-  		while(pos != null) {
-  			//console.log(pos);
-  			path.push(pos);
-  			pos = cameFrom[pos];
-  		}
-  		path.reverse();
-  	}
-  	else {
-  		console.log('Path not found');
-  		//return [[], visited];
-  	}
+    var path = [];
+    if(pos[0] == goal[0] && pos[1] == goal[1]) {
+      while(pos != null) {
+        //console.log(pos);
+        path.push(pos);
+        pos = cameFrom[pos];
+      }
+      path.reverse();
+    }
+    else {
+      console.log('Path not found');
+      //return [[], visited];
+    }
 
-  	//draw the visited map and path
-  	if(pathFilename != undefined) this.drawPath(path, visited, start, goal, pathFilename);
-  	return [path, visited];
+    //draw the visited map and path
+    if(pathFilename != undefined) this.drawPath(path, visited, start, goal, pathFilename);
+    return [path, visited];
   }
 
   /**
@@ -226,75 +226,75 @@ class PpmLib {
    * @return {Array} return the the visited pixels and path.
    */
   dijkstra(start, goal, pathFilename) {
-  	if(this.pbm.length < 1) this.toPbm();
+    if(this.pbm.length < 1) this.toPbm();
 
-  	//this.pbm = this.erode(this.pbm, ERO); // erode
-  	this.pbm = this.dilate(this.pbm, RADIUS) // dilate
+    //this.pbm = this.erode(this.pbm, ERO); // erode
+    this.pbm = this.dilate(this.pbm, RADIUS) // dilate
 
-		var s2 = Math.sqrt(2);
-		var movement = [[1,0, 1.], [0,1, 1.], [-1,0, 1.], [0,-1, 1.],
-              	    [1,1, s2], [-1,1, s2], [-1,-1, s2], [1,-1, s2], 
-              	   ];
-		var front = new Heapq();
-  	front.heappush([0.001, start, null]);
-  	var extents = [this.WIDTH, this.HEIGHT];
-  	var visited = new TdArray(extents);
+    var s2 = Math.sqrt(2);
+    var movement = [[1,0, 1.], [0,1, 1.], [-1,0, 1.], [0,-1, 1.],
+                    [1,1, s2], [-1,1, s2], [-1,-1, s2], [1,-1, s2], 
+                   ];
+    var front = new Heapq();
+    front.heappush([0.001, start, null]);
+    var extents = [this.WIDTH, this.HEIGHT];
+    var visited = new TdArray(extents);
 
-  	var cameFrom = {};
+    var cameFrom = {};
 
-  	while(front.length() != 0) {
+    while(front.length() != 0) {
 
-  		let cur = front.heappop();
-  		let cost = cur[0];
-  		var pos = cur[1];
-  		let pre = cur[2];
+      let cur = front.heappop();
+      let cost = cur[0];
+      var pos = cur[1];
+      let pre = cur[2];
 
-  		if(visited.get(pos) > 0) continue;
+      if(visited.get(pos) > 0) continue;
 
-  		visited.put(cost, pos);
-  		cameFrom[pos] = pre;
+      visited.put(cost, pos);
+      cameFrom[pos] = pre;
 
-  		if(pos[0] == goal[0] && pos[1] == goal[1]) break;
+      if(pos[0] == goal[0] && pos[1] == goal[1]) break;
 
-  		for(let i in movement) {
-  			let newX = pos[0] + movement[i][0];
-  			let newY = pos[1] + movement[i][1];
-  			if(newX < 0 || newX >= extents[0] || newY < 0 || newY >= extents[1]) continue;
-  			let newPos = [newX, newY];
-  			if(visited.get(newPos) == 0 && this.pbm[newPos[1]][newPos[0]] != 0)
-  				front.heappush([cost + movement[i][2], newPos, pos]);
-  		}
-  	}
+      for(let i in movement) {
+        let newX = pos[0] + movement[i][0];
+        let newY = pos[1] + movement[i][1];
+        if(newX < 0 || newX >= extents[0] || newY < 0 || newY >= extents[1]) continue;
+        let newPos = [newX, newY];
+        if(visited.get(newPos) == 0 && this.pbm[newPos[1]][newPos[0]] != 0)
+          front.heappush([cost + movement[i][2], newPos, pos]);
+      }
+    }
 
-  	var path = [];
-  	if(pos[0] == goal[0] && pos[1] == goal[1]) {
-  		while(pos != null) {
-  			//console.log(pos);
-  			path.push(pos);
-  			pos = cameFrom[pos];
-  		}
-  		path.reverse();
-  	}
-  	else {
-  		console.log('Path not found');
-  		//return [[], visited];
-  	}
+    var path = [];
+    if(pos[0] == goal[0] && pos[1] == goal[1]) {
+      while(pos != null) {
+        //console.log(pos);
+        path.push(pos);
+        pos = cameFrom[pos];
+      }
+      path.reverse();
+    }
+    else {
+      console.log('Path not found');
+      //return [[], visited];
+    }
 
-  	//draw the visited map and path
-  	if(pathFilename != undefined) this.drawPath(path, visited, start, goal, pathFilename);
-  	return [path, visited];
-	}
+    //draw the visited map and path
+    if(pathFilename != undefined) this.drawPath(path, visited, start, goal, pathFilename);
+    return [path, visited];
+  }
 
-	/**
+  /**
    * @param  {Array} path
    * @param  {Array} visited
    * @param  {Array} start - The coordinate of start. 
    * @param  {Array} goal - The coordinate of goal.
-	 * @param  {String} pathFilename
-	 * @return {Array} return the the visited pixels and path.
-	 */
-	drawPath(path, visited, start, goal, pathFilename) {
-  	var fd = fs.openSync(pathFilename, 'w');
+   * @param  {String} pathFilename
+   * @return {Array} return the the visited pixels and path.
+   */
+  drawPath(path, visited, start, goal, pathFilename) {
+    var fd = fs.openSync(pathFilename, 'w');
 
     let pgmHead = 'P6\n' + this.WIDTH.toString() + ' ' + this.HEIGHT.toString() + '\n255\n';
     let headBuffer = new Buffer(pgmHead, 'utf8');
@@ -302,42 +302,42 @@ class PpmLib {
 
     var pgmMap = [];
     for(let i = 0; i < this.HEIGHT; i++) {
-		  for(let j = 0; j < this.WIDTH; j++) {
-		  	if(j == start[0] && i == start[1] || j == goal[0] && i == goal[1]) {
-		  	  pgmMap.push(0);
-		  	  pgmMap.push(0);
-		  	  pgmMap.push(0);
-		  	}
-		  	else if(this.pbm[i][j] == 0) {
-			  	pgmMap.push(255);
-			  	pgmMap.push(0);
-			  	pgmMap.push(0);	 
-		  	}
-		  	else if(visited.get([j,i]) > 0) {
-		  		//let c = visited.get([j,i])*(255/(this.WIDTH+this.HEIGHT));
-		  	  pgmMap.push(0);
-		  	  pgmMap.push(255);
-		  	  pgmMap.push(0);
-		  	}
-		  	else {
-		  	  pgmMap.push(255);
-		  	  pgmMap.push(255);
-		  	  pgmMap.push(255);
-		  	}
-		  }
-		}
+      for(let j = 0; j < this.WIDTH; j++) {
+        if(j == start[0] && i == start[1] || j == goal[0] && i == goal[1]) {
+          pgmMap.push(0);
+          pgmMap.push(0);
+          pgmMap.push(0);
+        }
+        else if(this.pbm[i][j] == 0) {
+          pgmMap.push(255);
+          pgmMap.push(0);
+          pgmMap.push(0);  
+        }
+        else if(visited.get([j,i]) > 0) {
+          //let c = visited.get([j,i])*(255/(this.WIDTH+this.HEIGHT));
+          pgmMap.push(0);
+          pgmMap.push(255);
+          pgmMap.push(0);
+        }
+        else {
+          pgmMap.push(255);
+          pgmMap.push(255);
+          pgmMap.push(255);
+        }
+      }
+    }
 
-		for(let i in path) {
-			pgmMap[(path[i][0] + path[i][1] * this.WIDTH) * 3] = 0;
-			pgmMap[(path[i][0] + path[i][1] * this.WIDTH) * 3 + 1] = 0;
-			pgmMap[(path[i][0] + path[i][1] * this.WIDTH) * 3 + 2 ] = 0;
-		}
+    for(let i in path) {
+      pgmMap[(path[i][0] + path[i][1] * this.WIDTH) * 3] = 0;
+      pgmMap[(path[i][0] + path[i][1] * this.WIDTH) * 3 + 1] = 0;
+      pgmMap[(path[i][0] + path[i][1] * this.WIDTH) * 3 + 2 ] = 0;
+    }
 
     let dataBuffer = new Buffer(pgmMap);
     fs.writeSync(fd, dataBuffer, 0, dataBuffer.length, headBuffer.length);
-		fs.closeSync(fd);
+    fs.closeSync(fd);
 
-  	return [path, visited];
+    return [path, visited];
   }
 
   /**
@@ -347,30 +347,30 @@ class PpmLib {
    * @return {Array} The eroded binary map.
    */
   erode(pbm, r) {
-  	let h = pbm.length;
-  	let w = pbm[0].length;
-		let neighbor = [[1,0], [0,1], [-1,0], [0,-1],
-		          	    [1,1], [-1,1], [-1,-1], [1,-1], 
-		          	   ];
+    let h = pbm.length;
+    let w = pbm[0].length;
+    let neighbor = [[1,0], [0,1], [-1,0], [0,-1],
+                    [1,1], [-1,1], [-1,-1], [1,-1], 
+                   ];
 
-		var eroded = [];
-  	for(let i = 0; i < h; i++) {
-  		eroded.push([]);
-  		for(let j = 0; j < w; j++) {
-  			eroded[i].push(pbm[i][j]);
-  		}
-  	}
+    var eroded = [];
+    for(let i = 0; i < h; i++) {
+      eroded.push([]);
+      for(let j = 0; j < w; j++) {
+        eroded[i].push(pbm[i][j]);
+      }
+    }
     for(let i = 1; i < h-1; i++) {
-    	for(let j = 1; j < w-1; j++) {
-    		if(pbm[i][j] == 1) continue;
-    		let flag = 0;
-    		for(let k in neighbor) {
-    			if(pbm[i+neighbor[k][1]][j+neighbor[k][0]] == 0) {
-    				flag++;
-    			}
-    		}
-    		if(flag <= r) eroded[i][j] = 1;
-    	}
+      for(let j = 1; j < w-1; j++) {
+        if(pbm[i][j] == 1) continue;
+        let flag = 0;
+        for(let k in neighbor) {
+          if(pbm[i+neighbor[k][1]][j+neighbor[k][0]] == 0) {
+            flag++;
+          }
+        }
+        if(flag <= r) eroded[i][j] = 1;
+      }
     }
 
     return eroded;
@@ -383,43 +383,43 @@ class PpmLib {
    * @return {Array} The dilated binary map.
    */
   dilate(pbm, r) {
-  	let rr = r * r;
-  	let neighbor = [];
-  	/*
-		let neighbor = [[1,0], [0,1], [-1,0], [0,-1],
-		          	    [1,1], [-1,1], [-1,-1], [1,-1], 
-		          	   ];
-  	*/
-  	let x, y;
-  	for(x = -r; x <= r; x++) {
-  		for(y = -r; y <= r; y++) {
-  			if(x*x + y*y <= rr) neighbor.push([x, y]);
-  		}
-  	}
+    let rr = r * r;
+    let neighbor = [];
+    /*
+    let neighbor = [[1,0], [0,1], [-1,0], [0,-1],
+                    [1,1], [-1,1], [-1,-1], [1,-1], 
+                   ];
+    */
+    let x, y;
+    for(x = -r; x <= r; x++) {
+      for(y = -r; y <= r; y++) {
+        if(x*x + y*y <= rr) neighbor.push([x, y]);
+      }
+    }
 
-  	let h = pbm.length;
-  	let w = pbm[0].length;
-  	var dilated = [];
-  	for(let i = 0; i < h; i++) {
-  		dilated.push([]);
-  		for(let j = 0; j < w; j++) {
-  			dilated[i].push(pbm[i][j]);
-  		}
-  	}
+    let h = pbm.length;
+    let w = pbm[0].length;
+    var dilated = [];
+    for(let i = 0; i < h; i++) {
+      dilated.push([]);
+      for(let j = 0; j < w; j++) {
+        dilated[i].push(pbm[i][j]);
+      }
+    }
 
     for(let i = r; i < h-r; i++) {
-    	for(let j = r; j < w-r; j++) {
-    		if(pbm[i][j] == 0) continue;
-    		let flag = false;
-    		for(let k in neighbor) {
-    			if(pbm[i+neighbor[k][1]][j+neighbor[k][0]] == 0) {
-    				flag = true;
-    				break;
-    			}
-    		}
-    		if(flag == true) dilated[i][j] = 0;
-    	}
-    }  	
+      for(let j = r; j < w-r; j++) {
+        if(pbm[i][j] == 0) continue;
+        let flag = false;
+        for(let k in neighbor) {
+          if(pbm[i+neighbor[k][1]][j+neighbor[k][0]] == 0) {
+            flag = true;
+            break;
+          }
+        }
+        if(flag == true) dilated[i][j] = 0;
+      }
+    }   
 
     return dilated;
   }
@@ -428,44 +428,44 @@ class PpmLib {
 
 class TdArray {
 
-	constructor(extents) {
-		this.extents = extents;
-		this.i = 0;
-		this.data = new Array();
-		if(extents != undefined)
-			for(let i = 0; i < extents[1]; i++) {
-				this.data.push([])
-				for(let j = 0; j < extents[0]; j++)
-					this.data[i].push(0.0);
-			}
+  constructor(extents) {
+    this.extents = extents;
+    this.i = 0;
+    this.data = new Array();
+    if(extents != undefined)
+      for(let i = 0; i < extents[1]; i++) {
+        this.data.push([])
+        for(let j = 0; j < extents[0]; j++)
+          this.data[i].push(0.0);
+      }
 
-	}
+  }
 
-	put(value, pos) {
-		this.data[pos[1]][pos[0]] = value;
-	}
+  put(value, pos) {
+    this.data[pos[1]][pos[0]] = value;
+  }
 
-	remove(pos) {
-		//
-	}
+  remove(pos) {
+    //
+  }
 
-	get(pos) {
-		return this.data[pos[1]][pos[0]];
-	}
+  get(pos) {
+    return this.data[pos[1]][pos[0]];
+  }
 
-	length() {
-		var count = 0;
-		for(let i = 0; i < this.extents[1]; i++) 
-			for(let j = 0; j < this.extents[0]; j++)
-				if(this.data[i][j] > 0.0) count++;
-		return count;
+  length() {
+    var count = 0;
+    for(let i = 0; i < this.extents[1]; i++) 
+      for(let j = 0; j < this.extents[0]; j++)
+        if(this.data[i][j] > 0.0) count++;
+    return count;
   }
 } //class TdArray end
 
 class Heapq {
-	constructor() {
-		this.array = [];
-	}
+  constructor() {
+    this.array = [];
+  }
 
   swap(array, i, j) {
     var temp = array[i];
@@ -505,9 +505,9 @@ class Heapq {
   }
 
   heappush(element) {
-  	this.array.push(element);
+    this.array.push(element);
     //this.buildHeap(this.array);
-  	this.heapify(this.array, Math.floor(this.array.length / 2) - 1, this.array.length);
+    this.heapify(this.array, Math.floor(this.array.length / 2) - 1, this.array.length);
   }
 
   heappop() {
@@ -517,7 +517,7 @@ class Heapq {
   }
 
   length() {
-  	return this.array.length;
+    return this.array.length;
   }
 
 } // class Heapq end
