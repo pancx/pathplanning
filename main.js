@@ -9,7 +9,7 @@ console.log('Width: ' + map.WIDTH + ', Hight: ' + map.HEIGHT);
 
 
 //map.saveAsPgmMap('obs2.pgm');
-//var res = map.dijkstra([65, 100], [276, 100], 'path5_d_10.ppm');
+//var res = map.dijkstra([65, 100], [276, 100], 'path5_d.ppm'); //[width, height]
 
 //var res = map.dijkstra([25, 50], [76, 50], 'path0_dilate.ppm');
 //var res = map.AStar([25, 50], [76, 50], 'path0_AStar.ppm');

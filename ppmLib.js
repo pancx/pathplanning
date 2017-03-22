@@ -2,7 +2,7 @@
 const fs = require('fs');
 
 const OBSTACLETHRESHOLD = 230; //The threshold value of judging if a pixel is an obstacle.
-const RADIUS = 6; // The radius constant of Robot. 6
+const RADIUS = 6; // The radius constant of Robot. The radius of dfrobot hcr: 6 (when the size of one cell is 0.025m).
 const ERO = 2; // The coefficient constant of erosion. 2
 
 /**
@@ -18,8 +18,8 @@ class PpmLib {
     this.pbm = new Array();
     this.WIDTH = 0;
     this.HEIGHT = 0;
-    this.format = ''; //todo
-    this.remark = ''; //todo
+    this.format = ''; //todo: read different kinds of maps.
+    this.remark = ''; //todo: read the remark in the file header.
     this.maxValue = 0;
   }
 
@@ -426,6 +426,9 @@ class PpmLib {
 
 } //class PpmLib end
 
+/**
+ * This class help put and get the value of visited cells.
+ */
 class TdArray {
 
   constructor(extents) {
@@ -462,6 +465,9 @@ class TdArray {
   }
 } //class TdArray end
 
+/**
+ * This class help accelerate to find the minimum value.
+ */
 class Heapq {
   constructor() {
     this.array = [];
@@ -495,6 +501,7 @@ class Heapq {
       }
     }
   }
+
 
   buildHeap(array) {
     var i,
