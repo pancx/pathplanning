@@ -228,7 +228,7 @@ class PpmLib {
   dijkstra(start, goal, pathFilename) {
     if(this.pbm.length < 1) this.toPbm();
 
-    //this.pbm = this.erode(this.pbm, ERO); // erode
+    this.pbm = this.erode(this.pbm, ERO); // erode
     this.pbm = this.dilate(this.pbm, RADIUS) // dilate
 
     var s2 = Math.sqrt(2);
