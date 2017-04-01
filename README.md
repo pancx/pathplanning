@@ -32,9 +32,9 @@ Real map,</br>
 Map size: 430*462</br>
 Start [215, 167],  goal [270, 310]</br>
 </br></br>
-**real map path planing**</br>
+**real map path planning**</br>
 ![path](https://github.com/pancx/pathplanning/blob/master/pic/wrong_path.png "path")
 </br></br>
-**eroded & dilated map path planing**</br>
+**eroded & dilated map path planning**</br>
 ![erode&dilate](https://github.com/pancx/pathplanning/blob/master/pic/erode_dilate_path.png "erode&dilate")
 </br>
